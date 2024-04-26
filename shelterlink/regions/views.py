@@ -2,27 +2,28 @@ from rest_framework import generics
 from rest_framework.response import Response
 from .models import AreaSido, AreaSigungu
 from django.http import JsonResponse
+from rest_framework.views import APIView
 
-def region_page(request):
-    option = request.GET.get('option')  # 옵션 파라미터 가져오기
-    sido_code = request.GET.get('sido_code')  # 시/도 코드 가져오기
-    sigungu_code = request.GET.get('sigungu_code')  # 시/군/구 코드 가져오기
 
-    if option == 'sido' and not sigungu_code:
-        # 시/도만 선택한 경우
-        sido_list = list(AreaSido.objects.values())
-        return JsonResponse({'sido_list': sido_list})
+from .models import AreaSido, AreaSigungu
+from .serializers import AreaSidoSerializer, AreaSigunguSerializer
 
-    elif option == 'sido' and sigungu_code:
-        # 시/도와 시/군/구를 모두 선택한 경우
-        sigungu_list = list(AreaSigungu.objects.filter(sido_code=sido_code, sigungu_code=sigungu_code).values())
-        return JsonResponse({'sigungu_list': sigungu_list})
+class SidoListAPI(APIView):
+    def get(self, request):
+        sido_list = AreaSido.objects.all()
+        serializer = AreaSidoSerializer(sido_list, many=True)
+        return Response(serializer.data)
 
-    elif not option and not sido_code and not sigungu_code:
-        # 아무것도 선택하지 않은 경우
-        sido_list = list(AreaSido.objects.values())
-        return JsonResponse({'sido_list': sido_list})
-
-    else:
-        return JsonResponse({'error': 'Invalid option'})
-
+class SigunguListAPI(APIView):
+    def get(self, request):
+        sido_code = request.GET.get('sido_code')
+        sido_name = request.GET.get('sido_name') 
+        if sido_code:
+            sigungu_list = AreaSigungu.objects.filter(sido_code=sido_code)
+        elif sido_name:  # 추가된 코드
+            sido = AreaSido.objects.get(sido_name=sido_name) 
+            sigungu_list = AreaSigungu.objects.filter(sido_code=sido.sido_code)  
+        else:
+            return Response({"error": "Provide either 'sido_code' or 'sido_name' parameter."}, status=400)
+        serializer = AreaSigunguSerializer(sigungu_list, many=True)
+        return Response(serializer.data)

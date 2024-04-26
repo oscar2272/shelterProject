@@ -9,7 +9,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.only(
           left: 50,
@@ -21,24 +20,22 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.asset('assets/logo.png'),
-            TextField(
+            const TextField(
               decoration: InputDecoration(
-                fillColor: const Color(0xFF99A2AD).withOpacity(0.1),
                 filled: true,
                 hintText: 'Enter your ID',
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(
               height: 10,
             ),
-            TextField(
+            const TextField(
               obscureText: true, // 비밀번호 숨기기
               decoration: InputDecoration(
-                fillColor: const Color(0xFF99A2AD).withOpacity(0.1),
                 filled: true,
                 hintText: 'Password',
-                border: const OutlineInputBorder(), // 테두리 스타일
+                border: OutlineInputBorder(), // 테두리 스타일
               ),
             ),
             Row(
@@ -53,20 +50,30 @@ class HomeScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('로그인'),
+                  child: const Text(
+                    '로그인',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.w500),
+                  ),
                 ),
                 const Text(
                   '/',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.blue,
+                    color: Colors.black,
                   ),
                 ),
                 TextButton(
                   onPressed: () {
                     // 여기에 로그인 로직을 추가하세요.
                   },
-                  child: const Text('회원가입'),
+                  child: const Text(
+                    '회원가입',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),

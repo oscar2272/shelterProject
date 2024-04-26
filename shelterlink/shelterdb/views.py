@@ -3,6 +3,7 @@ from .models import Shelter
 from django.urls import reverse
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import viewsets, filters, pagination,generics
+from rest_framework.response import Response
 from .serializers import ShelterSerializer
 import pandas as pd
 from django.shortcuts import redirect
@@ -11,28 +12,39 @@ from shelterdb.models import Shelter
 
 def home(request):
   return render(request, 'shelterdb/home.html')
-class ShelterSearchPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 25
+
 class ShelterSearch(generics.ListAPIView):
     serializer_class = ShelterSerializer
-    pagination_class = ShelterSearchPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Serialize the queryset
+        serializer = self.serializer_class(queryset, many=True)
+
+        # Return the response
+        return Response(serializer.data)
 
     def get_queryset(self):
         queryset = Shelter.objects.all()
 
         sido_name = self.request.query_params.get('sido_name')
         sigungu_name = self.request.query_params.get('sigungu_name')
-
-        if sido_name and sigungu_name:
-            # 시/도와 시/군/구가 모두 존재하는 경우 해당 지역의 대피소
-            queryset = queryset.filter(address__startswith=sido_name).filter(address__icontains=sigungu_name)
-        elif sido_name:
-            # 시/도만 존재하는 경우 해당 시/도의 대피소
-            queryset = queryset.filter(address__startswith=sido_name)
-        else:
-            queryset = queryset.all()
+        if sigungu_name.lower() == 'null':
+          sigungu_name = None   # 플러터에서 null값의 문자열매칭위한값
+        if sido_name.lower() == 'null':
+          sido_name = None  
+        
+        if sido_name:
+            # 시/도만 존재하는 경우
+            if sigungu_name is None:
+                queryset = queryset.filter(address__startswith=sido_name)
+            elif not sido_name:
+                queryset = Shelter.objects.all()
+            # 시/도와 시/군/구가 모두 존재하는 경우
+            else :
+                queryset = queryset.filter(address__startswith=sido_name).filter(address__icontains=' '.join(sigungu_name.split()))
+                
         return queryset
 
 

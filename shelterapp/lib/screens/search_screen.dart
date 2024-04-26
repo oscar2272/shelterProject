@@ -30,10 +30,10 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 1,
         surfaceTintColor: Colors.white,
         shadowColor: Colors.black,
-        backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         title: const Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -46,12 +46,12 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/map.jpeg',
+              'assets/map.png',
             ),
             const SizedBox(height: 20),
             Row(
