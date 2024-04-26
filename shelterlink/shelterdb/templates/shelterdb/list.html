@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shelter List</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>대피소 리스트</h1>
+    <br />
+    <form action="{% url 'shelterdb:delete_all_shelters' %}" method="post">
+      {% csrf_token %}
+      <button type="submit">전체 삭제</button>
+    </form>
+    <br />
+    <a href="{% url 'shelterdb:home' %}">홈으로 돌아가기</a>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>시설명</th>
+          <th>주소</th>
+          <th>위치</th>
+          <th>시설면적</th>
+          <th>최대수용인원</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shelter in shelters %}
+        <tr>
+          <td>{{ shelter.facility_name }}</td>
+          <td>{{ shelter.address }}</td>
+          <td>{{ shelter.location }}</td>
+          <td>{{ shelter.area }}</td>
+          <td>{{ shelter.capacity }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      padding: 10px;
+    }
+    button[type="submit"] {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <body>
+    <h1>대피소 관리 시스템</h1>
+
+    <form
+      method="post"
+      enctype="multipart/form-data"
+      action="{% url 'shelterdb:upload_file' %}"
+    >
+      {% csrf_token %}
+      <input type="file" name="file" accept=".xlsx, .xls" />
+      <button type="submit">업로드</button>
+    </form>
+
+    <br />
+
+    <a href="{% url 'shelterdb:shelter_list' %}">대피소 리스트 보기</a>
+  </body>
+</html>
