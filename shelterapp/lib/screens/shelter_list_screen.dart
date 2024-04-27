@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:shelterapp/models/shelter_model.dart';
 import 'package:shelterapp/services/shelter_service.dart';
@@ -16,8 +18,16 @@ class ShelterListScreen extends StatefulWidget {
 }
 
 class _ShelterListScreenState extends State<ShelterListScreen> {
+  final ScrollController _scrollController = ScrollController();
   late final Future<List<ShelterModel>> shelters;
   late final ShelterService service;
+  bool _isVisible = false;
+
+  void _scrollToTop() {
+    _scrollController.animateTo(0,
+        duration: const Duration(milliseconds: 750), curve: Curves.ease);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -25,6 +35,12 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
       sidoName: widget.sidoName,
       sigunguName: widget.sigunguName,
     );
+
+    _scrollController.addListener(() {
+      setState(() {
+        _isVisible = _scrollController.offset >= 700;
+      });
+    });
   }
 
   @override
@@ -47,28 +63,28 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 15, right: 15, top: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
         child: Column(
           children: [
             Container(
               decoration: BoxDecoration(
-                color: const Color.fromRGBO(0, 1, 10, 100),
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(7),
               ),
               child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    top: 20,
+                    bottom: 20,
+                    right: 30,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flex(
-                        direction: Axis.vertical,
-                        children: [
-                          Text(
-                            '거리',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
+                      Text(
+                        '거리',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white),
                       ),
                       Text(
                         '시설명',
@@ -95,6 +111,33 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
                 }
               },
             ),
+            Visibility(
+              visible: _isVisible,
+              child: Transform.translate(
+                offset: const Offset(10, -30),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    MaterialButton(
+                      onPressed: () {
+                        _scrollToTop();
+                      },
+                      color: Colors.grey,
+                      splashColor: Colors.black,
+                      padding: const EdgeInsets.all(8),
+                      shape: const CircleBorder(),
+                      child: const Text(
+                        "TOP",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -102,21 +145,45 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
   }
 
   ListView makeShelterList(AsyncSnapshot<List<ShelterModel>> snapshot) {
-    return ListView.builder(
+    return ListView.separated(
+      controller: _scrollController,
       shrinkWrap: true,
       itemCount: snapshot.data!.length,
       itemBuilder: (context, index) {
         var shelter = snapshot.data![index];
         return ListTile(
           //leading
-          title: Text(shelter.facilityName),
-          subtitle: const Text("입장가능"),
+          title: Row(
+            children: [
+              const Text("10km"),
+              const SizedBox(
+                width: 40,
+              ),
+              Flexible(
+                child: Text(
+                  shelter.facilityName,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          subtitle: const Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text("입장가능"),
+            ],
+          ),
           trailing: IconButton(
             icon: const Icon(
               Icons.arrow_forward_ios_outlined,
             ),
             onPressed: () {},
           ),
+        );
+      },
+      separatorBuilder: (context, index) {
+        return const Divider(
+          height: 2,
         );
       },
     );

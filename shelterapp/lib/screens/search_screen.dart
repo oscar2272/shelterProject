@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:shelterapp/models/shelter_area_model.dart';
 import 'package:shelterapp/screens/shelter_list_screen.dart';
@@ -131,8 +132,8 @@ class _SearchScreenState extends State<SearchScreen> {
               builder: (context, snapshot) {
                 if (selectedSidoName == null) {
                   // 시/도가 "-"인 경우, 시/군/구를 조회하지 않음
-                  return const SizedBox
-                      .shrink(); // 빈 SizedBox를 반환하여 아무 내용도 표시하지 않음
+                  selectedSigunguName = null;
+                  // 빈 SizedBox를 반환하여 아무 내용도 표시하지 않음
                 } else if (snapshot.connectionState ==
                     ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -204,16 +205,19 @@ class _SearchScreenState extends State<SearchScreen> {
             const SizedBox(
               height: 60,
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(200, 50),
-              ),
-              onPressed: () {},
-              child: const Text(
-                '위치기반 검색',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(200, 50),
+                ),
+                onPressed: () {},
+                child: const Text(
+                  '위치기반 검색',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
