@@ -28,8 +28,20 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  pie_chart: ^5.4.0
+  flutter_native_splash: ^2.3.0
+  webview_flutter_wkwebview: ^3.4.3
+  webview_flutter: ^4.2.0
+  kakao_flutter_sdk: ^1.9.1+2
+  kakao_flutter_sdk_auth: ^1.9.1+2
+  connectivity: ^3.0.6
+  provider: ^6.1.2
+  url_launcher: ^6.0.9
   flutter:
     sdk: flutter
+  shared_preferences: ^2.0.6
+  flutter_naver_map: ^1.2.2
+  geolocator: ^7.0.3
   http: ^0.13.3
 
   # The following adds the Cupertino Icons font to your application.
@@ -57,9 +69,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/logo.png
-    - assets/map.jpeg
-    - assets/map.png
+    - assets/
+    - assets/fonts/
+  fonts:
+    - family: BlackHanSans
+      fonts:
+        - asset: assets/fonts/BlackHanSans-Regular.ttf
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

@@ -63,6 +63,9 @@
           <th>위치</th>
           <th>시설면적</th>
           <th>최대수용인원</th>
+          <th>현재수용인원</th>
+          <th>latitude</th>
+          <th>longitude</th>
         </tr>
       </thead>
       <tbody>
@@ -73,6 +76,9 @@
           <td>{{ shelter.location }}</td>
           <td>{{ shelter.area }}</td>
           <td>{{ shelter.capacity }}</td>
+          <td>{{ shelter.capacity_count }}</td>
+          <td>{{ shelter.latitude }}</td>
+          <td>{{ shelter.longitude }}</td>
         </tr>
         {% endfor %}
       </tbody>

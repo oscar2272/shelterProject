@@ -3,4 +3,5 @@ from .models import Shelter
 
 
 admin.site.register(Shelter)
+
 # Register your models here.

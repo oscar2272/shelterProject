@@ -9,5 +9,5 @@ class AreaSigunguAdmin(admin.ModelAdmin):
     ]
     list_display = ('sido_code', 'sigungu_name')
 
-
+admin.site.register(AreaSido)
 admin.site.register(AreaSigungu, AreaSigunguAdmin)

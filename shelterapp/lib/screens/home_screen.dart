@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shelterapp/screens/search_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shelterapp/provider/user_provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+import 'root.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -17,68 +21,134 @@ class HomeScreen extends StatelessWidget {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset('assets/logo.png'),
-            const TextField(
-              decoration: InputDecoration(
-                filled: true,
-                hintText: 'Enter your ID',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const TextField(
-              obscureText: true, // 비밀번호 숨기기
-              decoration: InputDecoration(
-                filled: true,
-                hintText: 'Password',
-                border: OutlineInputBorder(), // 테두리 스타일
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SearchScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    '로그인',
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.w500),
-                  ),
-                ),
-                const Text(
-                  '/',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // 여기에 로그인 로직을 추가하세요.
-                  },
-                  child: const Text(
-                    '회원가입',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _loginButton(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _loginButton(BuildContext context) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GestureDetector(
+          onTap: () async {
+            try {
+              String kakaoLoginUrl = await UserController.loginWithKakao();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      KakaoLoginPage(kakaoLoginUrl: kakaoLoginUrl),
+                ),
+              );
+            } catch (e) {
+              print('Failed to login with Kakao: $e');
+            }
+          },
+          child: Image.asset('assets/kakao.png'),
+        ),
+      );
+}
+
+class KakaoLoginPage extends StatefulWidget {
+  final String kakaoLoginUrl;
+  const KakaoLoginPage({super.key, required this.kakaoLoginUrl});
+
+  @override
+  _KakaoLoginPageState createState() => _KakaoLoginPageState();
+}
+
+class _KakaoLoginPageState extends State<KakaoLoginPage> {
+  WebViewController? _webViewController;
+  bool _loading = false;
+  @override
+  void initState() {
+    _webViewController = WebViewController();
+    _loadWebView(); // _loadWebView 함수를 호출하여 비동기 작업을 처리합니다.
+    super.initState();
+  }
+
+  void _loadWebView() async {
+    try {
+      String url = await UserController.loginWithKakao();
+      String sessionID = ''; // 세션 ID 초기화
+
+      _webViewController!
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..addJavaScriptChannel(
+          'LoggedInChannel',
+          onMessageReceived: (JavaScriptMessage message) async {
+            // 클라이언트에서 받은 메시지가 세션 ID인 경우
+            sessionID = message.message;
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('session_id', sessionID);
+            print("loadWebView SessionId:$sessionID");
+
+            // Close the web view
+            Navigator.pop(context);
+
+            // Navigate to your desired screen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Root(selectedIndex: 0),
+              ),
+            );
+          },
+        )
+        ..loadRequest(Uri.parse(url))
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              setState(() {
+                _loading = true;
+              });
+            },
+            onPageFinished: (String url) {
+              setState(() {
+                _loading = false;
+              });
+            },
+          ),
+        );
+
+      // Wait for the web view to finish loading
+      // while (sessionID.isEmpty) {
+      //   await Future.delayed(const Duration(milliseconds: 100)); // 잠시 기다림
+      // }
+
+      // Use the session ID here if needed
+      print('Received session ID: $sessionID');
+
+      setState(() {
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+      });
+      print('Failed to load Kakao login URL: $e');
+      // Handle error
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Kakao Login')),
+      body: Stack(
+        children: [
+          WebViewWidget(
+            controller: _webViewController!,
+          ),
+          if (_loading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
       ),
     );
   }

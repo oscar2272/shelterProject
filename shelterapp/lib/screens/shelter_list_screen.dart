@@ -1,17 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:shelterapp/models/shelter_model.dart';
+import 'package:shelterapp/provider/user_provider.dart';
+import 'package:shelterapp/screens/root.dart';
+import 'package:shelterapp/screens/shelter_map_screen.dart';
 import 'package:shelterapp/services/shelter_service.dart';
 
 class ShelterListScreen extends StatefulWidget {
   final String? sidoName, sigunguName;
-  const ShelterListScreen({
-    super.key,
-    required this.sidoName,
-    required this.sigunguName,
-  });
+  final double? latitude, longitude;
+
+  const ShelterListScreen(
+      {super.key,
+      required this.sidoName,
+      required this.sigunguName,
+      this.latitude,
+      this.longitude});
 
   @override
   State<ShelterListScreen> createState() => _ShelterListScreenState();
@@ -19,32 +25,50 @@ class ShelterListScreen extends StatefulWidget {
 
 class _ShelterListScreenState extends State<ShelterListScreen> {
   final ScrollController _scrollController = ScrollController();
-  late final Future<List<ShelterModel>> shelters;
-  late final ShelterService service;
+  late Future<List<ShelterModel>> shelters;
+  late final double distance;
   bool _isVisible = false;
+  final int _selectedIndex = 0;
+  UserController? userState;
+
+// 대피소와 현재 위치 사이의 거리를 계산하는 함수
+  double calculateDistance(double shelterLatitude, double shelterLongitude,
+      double currentLatitude, double currentLongitude) {
+    var currentLng = NLatLng(currentLatitude, currentLongitude);
+    var shelterLng = NLatLng(shelterLatitude, shelterLongitude);
+    double distance = currentLng.distanceTo(shelterLng);
+    return distance;
+  }
 
   void _scrollToTop() {
     _scrollController.animateTo(0,
-        duration: const Duration(milliseconds: 750), curve: Curves.ease);
+        duration: const Duration(milliseconds: 50), curve: Curves.decelerate);
   }
 
   @override
   void initState() {
     super.initState();
-    shelters = ShelterService.getShelters(
-      sidoName: widget.sidoName,
-      sigunguName: widget.sigunguName,
-    );
-
+    fetchShelters();
     _scrollController.addListener(() {
       setState(() {
-        _isVisible = _scrollController.offset >= 700;
+        _isVisible = _scrollController.offset >= 200;
       });
     });
   }
 
+  void fetchShelters() {
+    shelters = ShelterService.getShelters(
+      sidoName: widget.sidoName,
+      sigunguName: widget.sigunguName,
+      latitude: widget.latitude,
+      longitude: widget.longitude,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -141,25 +165,106 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        fixedColor: Colors.grey,
+        currentIndex: _selectedIndex,
+        onTap: (value) {
+          setState(
+            () {
+              switch (value) {
+                case 0:
+                  Navigator.pop(context, 0);
+
+                  break;
+                case 1:
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Root(selectedIndex: value),
+                    ),
+                    (route) => false, // 모든 이전 경로를 제거하기 위해 false 반환
+                  );
+                  break;
+              }
+            },
+          );
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+            ),
+            activeIcon: Icon(
+              Icons.home,
+              color: Colors.grey, // 선택된 상태의 아이콘 색상
+            ),
+            label: "home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.people,
+            ),
+            label: "mypage",
+          ),
+        ],
+      ),
     );
   }
 
   ListView makeShelterList(AsyncSnapshot<List<ShelterModel>> snapshot) {
+    // 거리에 따라 대피소 목록을 정렬
+    List<ShelterModel> sortedShelters = snapshot.data!;
+    double currentLatitude = widget.latitude!;
+    double currentLongitude = widget.longitude!;
+
+// 만약 longitude가 음수라면 한국의 일정한 좌표로 대체
+    if (widget.longitude! < 0) {
+      currentLatitude = 37.0113;
+      currentLongitude = 127.2653;
+      sortedShelters.sort((a, b) {
+        double distanceA = calculateDistance(
+            a.latitude, a.longitude, currentLatitude, currentLongitude);
+        double distanceB = calculateDistance(
+            b.latitude, b.longitude, currentLatitude, currentLongitude);
+
+        return distanceA.compareTo(distanceB);
+      });
+    } else {
+      sortedShelters.sort((a, b) {
+        double distanceA = calculateDistance(
+            a.latitude, a.longitude, widget.latitude!, widget.longitude!);
+        double distanceB = calculateDistance(
+            b.latitude, b.longitude, widget.latitude!, widget.longitude!);
+        return distanceA.compareTo(distanceB);
+      });
+    }
+
     return ListView.separated(
       controller: _scrollController,
       shrinkWrap: true,
       itemCount: snapshot.data!.length,
       itemBuilder: (context, index) {
         var shelter = snapshot.data![index];
+        double distance = calculateDistance(shelter.latitude, shelter.longitude,
+            currentLatitude, currentLongitude);
+
         return ListTile(
           //leading
           title: Row(
             children: [
-              const Text("10km"),
-              const SizedBox(
-                width: 40,
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.13,
+                child: Text(
+                  distance < 1000
+                      ? '${distance.toInt()} m'
+                      : '${(distance / 1000).toStringAsFixed(1)} km',
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              Flexible(
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.05,
+              ),
+              Expanded(
                 child: Text(
                   shelter.facilityName,
                   overflow: TextOverflow.ellipsis,
@@ -167,23 +272,49 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
               ),
             ],
           ),
-          subtitle: const Row(
+          subtitle: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text("입장가능"),
+              shelter.capacity! > shelter.capacityCount!
+                  ? const Text("입장가능")
+                  : const Text("수용불가"),
             ],
           ),
           trailing: IconButton(
             icon: const Icon(
               Icons.arrow_forward_ios_outlined,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ShelterMapScreen(
+                    shelterId: shelter.shelterId,
+                    latitude: shelter.latitude,
+                    longitude: shelter.longitude,
+                    distance: distance,
+                    sidoName: widget.sidoName,
+                    sigunguName: widget.sigunguName,
+                  ),
+                ),
+              ).then(
+                (needRefresh) {
+                  if (needRefresh == true) {
+                    setState(
+                      () {
+                        fetchShelters();
+                      },
+                    );
+                  }
+                },
+              );
+            },
           ),
         );
       },
       separatorBuilder: (context, index) {
-        return const Divider(
-          height: 2,
+        return Divider(
+          height: MediaQuery.of(context).size.height * 0.01,
         );
       },
     );

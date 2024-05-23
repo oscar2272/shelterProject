@@ -17,9 +17,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,include
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView 
+from shelterlink.views import GetCSRFTokenView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('region/', include('regions.urls')),  # regions 앱의 URL 패턴을 포함합니다.
     path('shelter/', include('shelterdb.urls')),  # shelterdb 앱의 URL 패턴을 포함합니다.
+    path('get_csrf_token/',GetCSRFTokenView.as_view()),
+    path('user/',include('user.urls'))
 ]
+
+

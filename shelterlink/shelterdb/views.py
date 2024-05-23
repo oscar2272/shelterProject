@@ -1,17 +1,69 @@
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+
+from user.models import CustomUsers
 from .models import Shelter
 from django.urls import reverse
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import viewsets, filters, pagination,generics
+from rest_framework import viewsets, filters, pagination,generics,status
 from rest_framework.response import Response
 from .serializers import ShelterSerializer
 import pandas as pd
+from django.views import View
 from django.shortcuts import redirect
 from django.core.exceptions import ValidationError
 from shelterdb.models import Shelter
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+import json
 def home(request):
   return render(request, 'shelterdb/home.html')
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class AddShelterCapacityCountView(View):
+    def put(self, request, shelter_id):
+        data = json.loads(request.body)
+        user_id = data.get('userId')
+        try:
+            user = CustomUsers.objects.get(pk=user_id)
+            print("user.name:",user.username)
+            shelter = Shelter.objects.get(pk=shelter_id)
+            print(shelter.facility_name)
+
+            shelter.capacity_count += 1
+            shelter.save()
+
+            user.shelter_id=shelter
+            user.save()
+
+            return JsonResponse({}, status=201)
+        except CustomUsers.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except Shelter.DoesNotExist:
+            return JsonResponse({'error': 'Shelter not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    
+class SubtractShelterCapacityCountView(View):
+    @csrf_exempt
+    def put(self, request,shelter_id):
+        data = json.loads(request.body)
+        user_id = data.get('userId')
+        try:
+            user = CustomUsers.objects.get(pk=user_id)
+            shelter = Shelter.objects.get(id=shelter_id)
+           
+            shelter.capacity_count -= 1
+            shelter.save()
+            
+            user.shelter_id = None
+            user.save()
+            return JsonResponse({}, status=201)
+        except Shelter.DoesNotExist:
+            return JsonResponse({'error': 'Shelter not found'}, status=404)    
 
 class ShelterSearch(generics.ListAPIView):
     serializer_class = ShelterSerializer
@@ -47,8 +99,9 @@ class ShelterSearch(generics.ListAPIView):
                 
         return queryset
 
-
-
+class ShelterDetailView(generics.RetrieveAPIView):
+    queryset = Shelter.objects.all()
+    serializer_class = ShelterSerializer
 
 def shelter_list(request):
     shelters = Shelter.objects.all()
@@ -78,7 +131,8 @@ def upload_file(request):
             location = row.iloc[2]  # 세 번째 열의 데이터
             area = row.iloc[3]  # 네 번째 열의 데이터
             capacity = row.iloc[4]  # 다섯 번째 열의 데이터
-
+            latitude = row.iloc[5]
+            longitude = row.iloc[6]
             # area 값을 소수점 버리고 정수형으로 변환합니다.
             try:
                 area = int(float(area))  # area 값을 소수점 버리고 정수형으로 변환합니다.
@@ -94,7 +148,10 @@ def upload_file(request):
                     address=address,
                     location=location,
                     area=area,
-                    capacity=capacity
+                    capacity=capacity,
+                    capacity_count=0,
+                    latitude=latitude,
+                    longitude=longitude,
                 )
                 shelter.save()
             except ValidationError as e:
