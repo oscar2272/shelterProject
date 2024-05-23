@@ -102,6 +102,7 @@ class ShelterService {
     final response = await http.get(Uri.parse('$baseUrl/get_csrf_token'));
 
     // 응답 확인 및 CSRF 토큰 추출
+    if (response.statusCode == 200) {
       // 서버 응답에서 CSRF 토큰을 추출
       final csrfToken = json.decode(response.body)['csrf_token'];
       return csrfToken;
