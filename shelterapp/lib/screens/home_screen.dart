@@ -67,7 +67,7 @@ class _KakaoLoginPageState extends State<KakaoLoginPage> {
   @override
   void initState() {
     _webViewController = WebViewController();
-    _loadWebView(); // _loadWebView 함수를 호출하여 비동기 작업을 처리합니다.
+    _loadWebView();
     super.initState();
   }
 
@@ -138,7 +138,9 @@ class _KakaoLoginPageState extends State<KakaoLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kakao Login')),
+      appBar: AppBar(
+        leading: const SizedBox(),
+      ),
       body: Stack(
         children: [
           WebViewWidget(

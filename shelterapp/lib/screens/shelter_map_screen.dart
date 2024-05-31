@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shelterapp/models/shelter_model.dart';
 import 'package:shelterapp/provider/user_provider.dart';
 import 'package:shelterapp/services/shelter_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ShelterMapScreen extends StatefulWidget {
   final String? sidoName, sigunguName;
@@ -63,22 +62,10 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
     return isEntered == false && distance <= 250 && capacity > capacityCount;
   }
 
-  void onNaverMap() async {
-    var latitude = widget.latitude;
-    var longitude = widget.longitude;
-    final uri = Uri.parse('navermaps://?lat=$latitude&lng=$longitude');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      throw 'Could not launch $uri';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double height = screenSize.height;
-    double width = screenSize.width;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -166,8 +153,14 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Icon(
-                                                    Icons.arrow_drop_down),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context)
+                                                        .pop(); // BottomSheet를 닫음
+                                                  },
+                                                  icon: const Icon(
+                                                      Icons.arrow_drop_down),
+                                                ),
                                                 const Flexible(
                                                   flex: 1,
                                                   child: Row(
@@ -442,7 +435,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
                           color: Colors.black54,
                           size: 30,
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -461,7 +454,9 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
                     options: NaverMapViewOptions(
                       initialCameraPosition: NCameraPosition(
                         target: NLatLng(
-                            shelterData.latitude, shelterData.longitude),
+                          shelterData.latitude,
+                          shelterData.longitude,
+                        ),
                         zoom: 15,
                       ),
                     ),

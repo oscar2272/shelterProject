@@ -67,7 +67,7 @@ class KakaoCallBackView(View):
 
             login(request, user)
             print("User logged in:", user)
-
+            
             session_id = request.session.session_key
             user.session_id = session_id
             
@@ -87,8 +87,9 @@ class KakaoCallBackView(View):
             login(request, user)
             print("User sign up :",user)
             print("User logged in:", user)
+            request.session.save()
             session_id = request.session.session_key
-            
+            print("session_id:",session_id)
             user.session_id = session_id
             user.save()
             success_script = f''' 

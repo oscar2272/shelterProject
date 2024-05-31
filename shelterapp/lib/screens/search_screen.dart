@@ -28,7 +28,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _locationProvider = Provider.of<LocationProvider>(context, listen: false);
-    _locationProvider.updateLocation(); // 위치 업데이트 호출
+    _locationProvider.updateLocation();
     userState = Provider.of<UserController>(context, listen: false);
     userState!.fetchUserData();
 
@@ -53,7 +53,6 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double height = screenSize.height;
-    double width = screenSize.width;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 20),
       child: Column(
@@ -132,7 +131,7 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
           SizedBox(
-            height: height * 0.05,
+            height: height * 0.03,
           ),
           FutureBuilder(
             future: sigungu,
@@ -202,9 +201,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-          SizedBox(
-            height: height * 0.1,
-          ),
+
           // Align(
           //   alignment: Alignment.bottomCenter,
           //   child: ElevatedButton(

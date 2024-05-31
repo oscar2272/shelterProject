@@ -20,7 +20,7 @@ class SigunguListAPI(APIView):
         sido_name = request.GET.get('sido_name') 
         if sido_code:
             sigungu_list = AreaSigungu.objects.filter(sido_code=sido_code)
-        elif sido_name:  # 추가된 코드
+        elif sido_name:  
             sido = AreaSido.objects.get(sido_name=sido_name) 
             sigungu_list = AreaSigungu.objects.filter(sido_code=sido.sido_code)  
         else:

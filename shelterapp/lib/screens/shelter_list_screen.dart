@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:shelterapp/models/shelter_model.dart';
 import 'package:shelterapp/provider/user_provider.dart';
@@ -67,8 +65,6 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -196,7 +192,7 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
             ),
             activeIcon: Icon(
               Icons.home,
-              color: Colors.grey, // 선택된 상태의 아이콘 색상
+              color: Colors.grey,
             ),
             label: "home",
           ),
@@ -218,7 +214,7 @@ class _ShelterListScreenState extends State<ShelterListScreen> {
     double currentLongitude = widget.longitude!;
 
 // 만약 longitude가 음수라면 한국의 일정한 좌표로 대체
-    if (widget.longitude! < 0) {
+    if (widget.longitude! < 0 || widget.longitude == null) {
       currentLatitude = 37.0113;
       currentLongitude = 127.2653;
       sortedShelters.sort((a, b) {

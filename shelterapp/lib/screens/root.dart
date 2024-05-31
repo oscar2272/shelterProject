@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shelterapp/provider/user_provider.dart';
 import 'package:shelterapp/screens/search_screen.dart';
-import 'package:shelterapp/screens/userInfo_screen.dart';
+import 'package:shelterapp/screens/profile_screen.dart';
 
 class Root extends StatefulWidget {
   final int selectedIndex;
